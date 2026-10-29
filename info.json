@@ -1,0 +1,9 @@
+{
+  "name": "unipipe-large",
+  "version": "0.1.0",
+  "title": "Unipipe Large",
+  "author": "LorandBiro",
+  "factorio_version": "2.1",
+  "dependencies": ["base >= 2.0", "Unipipe >= 1.0.0"],
+  "description": "Enlarges the Unipipe filler and extractor to 7x7 tank buildings. Balance through footprint: big fluid ports at subfactory boundaries, too large to crowd around every machine."
+}
