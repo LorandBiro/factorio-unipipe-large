@@ -14,11 +14,14 @@ local FILL_NAME = "zy-unipipe-fill"
 local EXTRACT_NAME = "zy-unipipe-extract"
 
 -- The regular (non-linked) pipe connection moves from half a tile from the
--- center to the middle of the building edge: south edge for the filler,
--- north edge for the extractor.
+-- center to the center of the perimeter tile: the south tile row for the
+-- filler, the north tile row for the extractor. That is size/2 - 0.5 = 3 for
+-- the 7x7 footprint -- the same relative spot as upstream's {0, +/-0.5} on the
+-- 1x2 pump. It must stay strictly inside the collision box (+/-3.4, quantized
+-- to 1/256 tile => 3.3984375), so the boundary value 3.5 is invalid.
 local CONNECTION_POSITIONS = {
-  [FILL_NAME] = { 0, 3.5 },
-  [EXTRACT_NAME] = { 0, -3.5 },
+  [FILL_NAME] = { 0, 3 },
+  [EXTRACT_NAME] = { 0, -3 },
 }
 
 -- One sprite for all four rotations: the building is rotationally symmetric, so
@@ -50,7 +53,8 @@ local function enlarge(name, connection_position)
   entity.selection_box = { { -3.5, -3.5 }, { 3.5, 3.5 } }
   entity.drawing_box = { { -3.5, -3.5 }, { 3.5, 3.5 } }
 
-  -- Move the regular pipe connection to the middle of the building edge. We
+  -- Move the regular pipe connection to the center of the perimeter tile (see
+  -- CONNECTION_POSITIONS above). We
   -- locate it by connection_type instead of a hardcoded index: the engine-level
   -- connection_type = "linked" entries (linked_connection_id = 1 -- what shares
   -- fluid globally across all Unipipe entities) are left exactly as upstream
