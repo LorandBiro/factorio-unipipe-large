@@ -1,12 +1,19 @@
-Building sprites ("insulated-tank.png" filler, "fluid-heater.png" extractor):
-"Exotic Space Industries" graphics mods by PreLeyZero and eliont, GNU GPLv3.
-https://mods.factorio.com/mod/exotic-space-industries-graphics-1 (and -2, -3)
-The sprites are redistributed unmodified under the terms of the GNU GPLv3
-(see graphics/LICENSE-GNU-GPLv3.txt). Because they are GPLv3, distributing
-this mod requires the combined work to be under a GPLv3-compatible license.
+Building sprite ("memory-unit.png") and base icon:
+"Deep Storage Unit" (Memory Storage) mod, code by notnotmelon, graphics by
+kaueNP, MIT. Taken from the factorio-unichest-large mod folder and
+redistributed under the MIT terms (see graphics/LICENSE-DeepStorageUnit.txt).
 
-Pipe port arrangement follows the Pyanodons caravan outpost geometry
-("outpost-fluid" in Py Alien Life by Pyanodon, GNU GPLv3):
-collision_box +/-2.9, selection_box +/-3, single south port at {0.5, 2.5}.
-Layout compatibility is intentional: grids piped up for Pyanodons caravans
-take these buildings drop-in. No Pyanodons code or assets are included.
+Icon badges (down/up arrows): base-game (Factorio) arrow icons from
+data/base/graphics/icons/arrows/, composited onto the memory-unit icon.
+Same building icon for both variants, differentiated by a drop indicator --
+the same approach Pyanodons uses on its caravan outposts.
+
+Pipe port arrangement and the pipe stub follow the Pyanodons caravan outpost
+geometry ("outpost-fluid" in Py Alien Life by Pyanodon, GNU GPLv3):
+collision_box +/-2.9, selection_box +/-3, single south port at {0.5, 2.5},
+verbatim pipe_picture. Layout compatibility is intentional: grids piped up
+for Pyanodons caravans take these buildings drop-in. No Pyanodons code or
+assets are included.
+
+(An alternative design with distinct Exotic Space Industries buildings per
+variant lives on the "initial-scaffold" branch, commit 8386fd7.)

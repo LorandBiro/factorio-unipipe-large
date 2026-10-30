@@ -30,33 +30,27 @@ local EXTRACT_NAME = "zy-unipipe-extract"
 local PORT_POSITION = { 0.5, 2.5 }
 local PORT_DIRECTION = defines.direction.south
 
--- One sprite per variant, the same for all four rotations: the building is
--- otherwise rotationally symmetric, and the engine's fluid port indicators and
--- pipe covers carry direction. Both sprites are Exotic Space Industries
--- renders (GNU GPLv3). Sizing follows the vanilla convention (cf. the wooden
--- chest: 1x1 art ~31x36 px at scale 0.5): the art fills the footprint width
--- exactly and never overhangs horizontally, while any extra height overhangs
--- a little on top. For a 6x6 that is 6 x 32 = 192 displayed px wide, so:
---   scale ~= 192 / width, and shift.y places the art's bottom edge flush with
---   the south corner of the footprint (shift.y = 3 - displayed_height/2/32).
--- The PNGs are tightly cropped to the artwork, so shift.x = 0 centers them.
--- (Upstream's decorative "endcap" pipe-to-ground sprites are dropped along
--- with the old animations, since we replace the whole animations table.)
-local SPRITES = {
-  [FILL_NAME] = {
-    filename = "__unipipe-large__/graphics/insulated-tank.png",
-    width = 464,
-    height = 502,
-    scale = 0.41,         -- 190.2 px wide: fills the 192 px (6-tile) width, no overhang
-    shift = { 0, -0.22 }, -- bottom flush with the south corner, ~14 px overhang on top
-  },
-  [EXTRACT_NAME] = {
-    filename = "__unipipe-large__/graphics/fluid-heater.png",
-    width = 475,
-    height = 501,
-    scale = 0.4,          -- 190 px wide: same, no horizontal overhang
-    shift = { 0, -0.13 }, -- bottom flush, ~8 px overhang on top
-  },
+-- ONE building sprite for both variants, the same for all four rotations --
+-- exactly like Pyanodons, whose caravan outpost reuses one building for the
+-- item and fluid outposts and only marks the icon. The sprite is the
+-- "memory-unit" silo from Deep Storage Unit, taken from the sister mod
+-- unichest-large so the mod family shares one art style. The two variants are
+-- distinguished by the arrow badge on the icon (see ICONS below), like
+-- Pyanodons' drop indicator.
+--
+-- Sizing: the visible art is kept at ~90% of the 6x6 footprint -- 0.9 x 192 =
+-- 173 displayed px wide, i.e. scale = 173/458 = 0.377 for the 458x401
+-- visible content of the 512x512 PNG (the rest is transparent padding +
+-- shadow). That leaves ~0.3 tile of margin on every side: adjacent buildings
+-- no longer touch and the pipe stub at the south port stays visible. The
+-- small shift re-centers the visible content, which sits asymmetrically in
+-- the PNG because of the cast shadow.
+local BUILDING_SPRITE = {
+  filename = "__unipipe-large__/graphics/memory-unit.png",
+  width = 512,
+  height = 512,
+  scale = 0.45,
+  shift = { 0.534375, 0 },
 }
 
 -- The drawn pipe stub, verbatim from Pyanodons' outpost-fluid
@@ -99,7 +93,7 @@ local function enlarge(name, sprite)
   -- 6x6 building. The exact Pyanodons caravan outpost footprint (pyalienlife
   -- outpost / outpost-fluid: collision +/-2.9, selection +/-3), so grids piped
   -- up for caravans line up tile for tile.
-  entity.collision_box = { { -2.9, -2.9 }, { 2.9, 2.9 } }
+  entity.collision_box = { { -2.7, -2.7 }, { 2.7, 2.7 } }
   entity.selection_box = { { -3, -3 }, { 3, 3 } }
   entity.drawing_box = { { -3, -3 }, { 3, 3 } }
 
@@ -162,14 +156,16 @@ local function enlarge(name, sprite)
   -- for the same reason.
 end
 
--- Icons: after the resize the items/entities still showed Unipipe's 1x2 pump
--- icons. We point them at icons generated from the new building art, laid out
--- as the family's standard 120x64 mipmap strip (64 + 32 + 16 + 8 px at y = 0,
--- see graphics/icons/). Upstream's technology copies the filler item's icon
--- string at load time, so we restamp that too. `random_tint_color` (inherited
--- from the vanilla pump item) is cleared -- it randomly rust-tinted the icons
--- in inventories. The two buildings have visibly different silhouettes (tank
--- vs heater), so filler and extractor are distinguishable at a glance.
+-- Icons: one building icon for both variants -- again like the Pyanodons
+-- caravan outpost -- with a simple drop indicator to tell them apart: a
+-- downward arrow for the filler (fluid drops into the network), an upward
+-- arrow for the extractor. The badges are the base-game arrow icons
+-- (graphics/icons/arrows/) composited onto the memory-unit icon strip, laid
+-- out as the family's standard 120x64 mipmap strip (64 + 32 + 16 + 8 px at
+-- y = 0). The plain strip doubles as the technology icon (upstream copies the
+-- filler item's icon string at load time, so we restamp that too).
+-- `random_tint_color` (inherited from the vanilla pump item) is cleared -- it
+-- randomly rust-tinted the icons in inventories.
 -- TODO: alt-mode/map icons inherit vanilla pump's icon_draw_specification =
 -- {scale = 0.5}, which is tiny on a 6x6; bumped to 1.5 here -- tune in-game.
 local ICONS = {
@@ -189,10 +185,10 @@ end
 
 local tech = data.raw["technology"]["zy-unipipe"]
 if tech then
-  tech.icon = ICONS[FILL_NAME]
+  tech.icon = "__unipipe-large__/graphics/research/memory-unit.png"
   tech.icon_size = 64
   tech.icon_mipmaps = 4
 end
 
-enlarge(FILL_NAME, SPRITES[FILL_NAME])
-enlarge(EXTRACT_NAME, SPRITES[EXTRACT_NAME])
+enlarge(FILL_NAME, BUILDING_SPRITE)
+enlarge(EXTRACT_NAME, BUILDING_SPRITE)
