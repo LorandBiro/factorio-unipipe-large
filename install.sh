@@ -29,6 +29,7 @@ find . -mindepth 1 -maxdepth 1 \
   ! -name '.git' \
   ! -name '*.zip' \
   ! -name 'install.sh' \
+  ! -name 'art-comparison' \
   -exec cp -r {} "$stage/" \;
 
 mkdir -p "$mods_dir"

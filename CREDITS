@@ -1,3 +1,12 @@
-Storage tank sprite: "Krastorio2Assets" mod by raiguard (Krastor), GNU LGPLv3.
-https://codeberg.org/raiguard/Krastorio2Assets
-The sprite is redistributed unmodified under the terms of the GNU LGPLv3.
+Building sprites ("insulated-tank.png" filler, "fluid-heater.png" extractor):
+"Exotic Space Industries" graphics mods by PreLeyZero and eliont, GNU GPLv3.
+https://mods.factorio.com/mod/exotic-space-industries-graphics-1 (and -2, -3)
+The sprites are redistributed unmodified under the terms of the GNU GPLv3
+(see graphics/LICENSE-GNU-GPLv3.txt). Because they are GPLv3, distributing
+this mod requires the combined work to be under a GPLv3-compatible license.
+
+Pipe port arrangement follows the Pyanodons caravan outpost geometry
+("outpost-fluid" in Py Alien Life by Pyanodon, GNU GPLv3):
+collision_box +/-2.9, selection_box +/-3, single south port at {0.5, 2.5}.
+Layout compatibility is intentional: grids piped up for Pyanodons caravans
+take these buildings drop-in. No Pyanodons code or assets are included.
