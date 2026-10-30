@@ -2,10 +2,10 @@
 --
 -- We load after Unipipe (see the "Unipipe" dependency in info.json) and mutate
 -- the prototypes Unipipe creates in data-final-fixes.lua. Nothing here copies or
--- forks Unipipe code; we only move boxes, ports and sprites on its entities.
+-- forks Unipipe code; we only move boxes, ports, sprites and icons on its entities.
 
 -- The internal entity/item names, exactly as Unipipe's config.lua defines them:
---   Config.PIPE_PREFIX    = "zy-unipipe"
+--   Config.PIPE_PREFIX       = "zy-unipipe"
 --   Config.PIPE_FILL_NAME    = "zy-unipipe-fill"     -- fluid input ("fill" / filler)
 --   Config.PIPE_EXTRACT_NAME = "zy-unipipe-extract"  -- fluid output ("extract" / extractor)
 -- Unipipe builds both as `table.deepcopy(data.raw["pump"]["pump"])`, so they live
@@ -13,32 +13,58 @@
 local FILL_NAME = "zy-unipipe-fill"
 local EXTRACT_NAME = "zy-unipipe-extract"
 
--- The regular (non-linked) pipe connection moves from half a tile from the
--- center to the center of the perimeter tile: the south tile row for the
--- filler, the north tile row for the extractor. That is size/2 - 0.5 = 3 for
--- the 7x7 footprint -- the same relative spot as upstream's {0, +/-0.5} on the
--- 1x2 pump. It must stay strictly inside the collision box (+/-3.4, quantized
--- to 1/256 tile => 3.3984375), so the boundary value 3.5 is invalid.
-local CONNECTION_POSITIONS = {
-  [FILL_NAME] = { 0, 3 },
-  [EXTRACT_NAME] = { 0, -3 },
+-- Building art: the "fluid-memory-unit" entity from the Fluid Memory Storage mod
+-- (MIT, code by notnotmelon, graphics by kaueNP -- see CREDITS and
+-- graphics/LICENSE-FluidMemoryStorage.txt). We reuse the art AND the entity
+-- configuration exactly as the original mod defines it:
+--   collision_box = {{-1.2, -1.2}, {1.2, 1.2}}   -- 3x3 with 0.3 inset
+--   selection_box = {{-1.5, -1.5}, {1.5, 1.5}}   -- 3x3
+--   picture       = 256x256, scale 0.5, shift {0.25, -0.0625}
+--   pipe ports at {0, 1} (south), {0, -1} (north), {1, 0} (east), {-1, 0} (west)
+-- Unipipe's pumps are 2-way (fill faces south, extract faces north), so each
+-- variant keeps exactly one of the original's four ports: the filler takes the
+-- south port {0, 1}, the extractor the north port {0, -1} -- the same
+-- orientation as upstream's {0, +/-0.5} ports on the 1x2 pump.
+-- (The original sets hide_connection_info = true on its tank; we keep Unipipe's
+-- visible connection info on purpose: the engine's fluid port indicator is the
+-- in-world "which way does the fluid flow" overlay.)
+--
+-- The two variants are distinguished by a tint (Factorio's multiplicative
+-- sprite tint) plus matching pre-tinted item icons: cool blue = filler (fluid
+-- in), warm amber = extractor (fluid out).
+local VARIANTS = {
+  [FILL_NAME] = {
+    connection_position = { 0, 1 },
+    tint = { r = 0.55, g = 0.78, b = 1.0 },
+    icon = "__unipipe-large__/graphics/icons/unipipe-fill.png",
+  },
+  [EXTRACT_NAME] = {
+    connection_position = { 0, -1 },
+    tint = { r = 1.0, g = 0.72, b = 0.45 },
+    icon = "__unipipe-large__/graphics/icons/unipipe-extract.png",
+  },
 }
+
+-- The original mod's research (technology) icon, reused for Unipipe's technology.
+local RESEARCH_ICON = "__unipipe-large__/graphics/research/fluid-memory-storage.png"
 
 -- One sprite for all four rotations: the building is rotationally symmetric, so
 -- one sprite serves all rotations; the engine's fluid port indicators and pipe
--- covers carry direction. The 0.8 scale makes the 256px art cover ~5 tiles of
--- the 7x7 footprint, centered; shift/scale may need a small in-game visual tweak.
--- (Upstream's decorative "endcap" pipe-to-ground sprites are dropped along with
--- the old animations, since we replace the whole animations table.)
-local tank_sprite = {
-  filename = "__unipipe-large__/graphics/big-storage-tank.png",
-  width = 256,
-  height = 256,
-  scale = 0.8,
-  shift = { 0, -0.3 },
-}
+-- covers carry direction. (Upstream's decorative "endcap" pipe-to-ground sprites
+-- are dropped along with the old animations, since we replace the whole
+-- animations table.)
+local function building_sprite(tint)
+  return {
+    filename = "__unipipe-large__/graphics/fluid-memory-unit.png",
+    priority = "high",
+    size = { 256, 256 },
+    shift = { 0.25, -0.0625 },
+    scale = 0.5,
+    tint = tint,
+  }
+end
 
-local function enlarge(name, connection_position)
+local function apply_variant(name, variant)
   local entity = data.raw["pump"][name]
   if not entity then
     error(
@@ -48,18 +74,19 @@ local function enlarge(name, connection_position)
     )
   end
 
-  -- 7x7 building.
-  entity.collision_box = { { -3.4, -3.4 }, { 3.4, 3.4 } }
-  entity.selection_box = { { -3.5, -3.5 }, { 3.5, 3.5 } }
-  entity.drawing_box = { { -3.5, -3.5 }, { 3.5, 3.5 } }
+  -- 3x3 building, exactly the fluid-memory-unit's boxes.
+  entity.collision_box = { { -1.2, -1.2 }, { 1.2, 1.2 } }
+  entity.selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } }
+  -- No drawing_box: the original mod sets none, and EntityPrototype::drawing_box
+  -- no longer exists in Factorio 2.0 (replaced by
+  -- drawing_box_vertical_extension).
 
-  -- Move the regular pipe connection to the center of the perimeter tile (see
-  -- CONNECTION_POSITIONS above). We
-  -- locate it by connection_type instead of a hardcoded index: the engine-level
-  -- connection_type = "linked" entries (linked_connection_id = 1 -- what shares
-  -- fluid globally across all Unipipe entities) are left exactly as upstream
-  -- defines them, as are flow_direction, pipe_covers, max_pipeline_extent and
-  -- volume.
+  -- Move the regular pipe connection to the original's south/north port (see
+  -- VARIANTS above). We locate it by connection_type instead of a hardcoded
+  -- index: the engine-level connection_type = "linked" entries
+  -- (linked_connection_id = 1 -- what shares fluid globally across all Unipipe
+  -- entities) are left exactly as upstream defines them, as are flow_direction,
+  -- pipe_covers, max_pipeline_extent and volume.
   if not entity.fluid_box or not entity.fluid_box.pipe_connections then
     error("unipipe-large: '" .. name .. "' has no fluid_box.pipe_connections; Unipipe's internals changed?")
   end
@@ -68,7 +95,7 @@ local function enlarge(name, connection_position)
     if connection.connection_type == "linked" then
       linked_seen = true -- intentionally untouched
     else
-      connection.position = connection_position
+      connection.position = variant.connection_position
       moved = moved + 1
     end
   end
@@ -80,11 +107,12 @@ local function enlarge(name, connection_position)
     )
   end
 
+  local sprite = building_sprite(variant.tint)
   entity.animations = {
-    north = { layers = { tank_sprite } },
-    south = { layers = { tank_sprite } },
-    east = { layers = { tank_sprite } },
-    west = { layers = { tank_sprite } },
+    north = { layers = { sprite } },
+    south = { layers = { sprite } },
+    east = { layers = { sprite } },
+    west = { layers = { sprite } },
   }
 
   -- Unipipe deepcopies base "pump" and only replaces `animations`, so the
@@ -98,7 +126,38 @@ local function enlarge(name, connection_position)
   entity.fluid_animation = nil
   entity.glass_pictures = nil
   entity.fluid_shadow = nil
+
+  -- Unipipe inherits vanilla pump's icon_draw_specification ({scale = 0.5});
+  -- the original mod uses the default alt-mode icon scale. Match the original.
+  entity.icon_draw_specification = nil
+
+  -- Icons (item + entity): pre-tinted variants of the original item icon
+  -- (64px + 3 mipmap levels in a 120x64 strip).
+  local item = data.raw["item"][name]
+  item.icon = variant.icon
+  item.icon_size = 64
+  item.icon_mipmaps = 4
+  -- The vanilla pump item carries random_tint_color = item_tints.iron_rust,
+  -- which would randomly recolor our carefully tinted icons per stack.
+  item.random_tint_color = nil
+  entity.icon = variant.icon
+  entity.icon_size = 64
+  entity.icon_mipmaps = 4
 end
 
-enlarge(FILL_NAME, CONNECTION_POSITIONS[FILL_NAME])
-enlarge(EXTRACT_NAME, CONNECTION_POSITIONS[EXTRACT_NAME])
+apply_variant(FILL_NAME, VARIANTS[FILL_NAME])
+apply_variant(EXTRACT_NAME, VARIANTS[EXTRACT_NAME])
+
+-- Technology icon: reuse the original mod's research icon (128x128).
+-- Upstream points the technology at a copy of the fill item icon string, so we
+-- have to set it explicitly here.
+local technology = data.raw["technology"]["zy-unipipe"]
+if not technology then
+  error(
+    "unipipe-large: expected Unipipe technology 'zy-unipipe' in data.raw[\"technology\"], "
+    .. "but it does not exist. Unipipe version mismatch?"
+  )
+end
+technology.icon = RESEARCH_ICON
+technology.icon_size = 128
+technology.icon_mipmaps = nil

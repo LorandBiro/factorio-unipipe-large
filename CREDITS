@@ -1,3 +1,10 @@
-Storage tank sprite: "Krastorio2Assets" mod by raiguard (Krastor), GNU LGPLv3.
-https://codeberg.org/raiguard/Krastorio2Assets
-The sprite is redistributed unmodified under the terms of the GNU LGPLv3.
+Building art (fluid-memory-unit entity sprite), item icon and research icon:
+"Fluid Memory Storage" mod, code by notnotmelon (Zachary Picco), graphics by kaueNP.
+MIT license, Copyright (c) 2024 Zachary Picco.
+https://github.com/notnotmelon/fluid-memory-storage
+The entity sprite and research icon are redistributed unmodified under the terms
+of the MIT license (see graphics/LICENSE-FluidMemoryStorage.txt).
+
+The filler/extractor item icons are derived from the mod's item icon by applying
+a colour tint (blue = filler, amber = extractor); the building sprite is tinted
+the same way at runtime via the prototype `tint` field.
