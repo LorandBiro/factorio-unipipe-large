@@ -165,7 +165,8 @@ end
 -- y = 0). The plain strip doubles as the technology icon (upstream copies the
 -- filler item's icon string at load time, so we restamp that too).
 -- `random_tint_color` (inherited from the vanilla pump item) is cleared -- it
--- randomly rust-tinted the icons in inventories.
+-- randomly rust-tinted the icons in inventories. The research icon gets a
+-- water-drop badge for the same reason (see below).
 -- TODO: alt-mode/map icons inherit vanilla pump's icon_draw_specification =
 -- {scale = 0.5}, which is tiny on a 6x6; bumped to 1.5 here -- tune in-game.
 local ICONS = {
@@ -185,9 +186,14 @@ end
 
 local tech = data.raw["technology"]["zy-unipipe"]
 if tech then
+  -- The research icon is the 128x128 memory-unit render with a droplet badge
+  -- (base-game signal-liquid icon, same style as the item arrows), so the
+  -- fluid research reads differently from the unichest one.
+  -- icon_size must be 128 for this file (a plain 128x128 icon, no mipmap
+  -- strip), matching how unichest-large wires its copy of it.
   tech.icon = "__unipipe-large__/graphics/research/memory-unit.png"
-  tech.icon_size = 64
-  tech.icon_mipmaps = 4
+  tech.icon_size = 128
+  tech.icon_mipmaps = nil
 end
 
 enlarge(FILL_NAME, BUILDING_SPRITE)

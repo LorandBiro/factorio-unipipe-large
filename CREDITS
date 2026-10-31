@@ -3,10 +3,11 @@ Building sprite ("memory-unit.png") and base icon:
 kaueNP, MIT. Taken from the factorio-unichest-large mod folder and
 redistributed under the MIT terms (see graphics/LICENSE-DeepStorageUnit.txt).
 
-Icon badges (down/up arrows): base-game (Factorio) arrow icons from
-data/base/graphics/icons/arrows/, composited onto the memory-unit icon.
-Same building icon for both variants, differentiated by a drop indicator --
-the same approach Pyanodons uses on its caravan outposts.
+Icon badges (down/up arrows on the items, droplet on the research icon):
+base-game (Factorio) icons from data/base/graphics/icons/ (arrows/ and
+signal/signal-liquid.png), composited onto the memory-unit icons. Same
+building icon for both variants, differentiated by a drop indicator -- the
+same approach Pyanodons uses on its caravan outposts.
 
 Pipe port arrangement and the pipe stub follow the Pyanodons caravan outpost
 geometry ("outpost-fluid" in Py Alien Life by Pyanodon, GNU GPLv3):
